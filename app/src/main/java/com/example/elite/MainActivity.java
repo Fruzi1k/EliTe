@@ -4,7 +4,9 @@ import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
 import android.view.View;
+import android.widget.Button;
 import android.widget.ImageView;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.activity.EdgeToEdge;
@@ -15,17 +17,15 @@ import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
-import androidx.core.graphics.Insets;
-import androidx.core.view.ViewCompat;
-import androidx.core.view.WindowInsetsCompat;
 
 import com.bumptech.glide.Glide;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.progressindicator.LinearProgressIndicator;
-import com.google.android.material.transition.MaterialArcMotion;
 import com.google.firebase.FirebaseApp;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.OnProgressListener;
 import com.google.firebase.storage.StorageReference;
@@ -39,6 +39,11 @@ public class MainActivity extends AppCompatActivity {
     Uri image;
     MaterialButton selectImage, uploadImage;
     ImageView imageView;
+    FirebaseAuth auth;
+    FirebaseUser user;
+    Button button_logOut;
+    TextView textView;
+
 
     private  final ActivityResultLauncher<Intent> activityResultLauncher = registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), new ActivityResultCallback<ActivityResult>() {
         @Override
@@ -68,12 +73,32 @@ public class MainActivity extends AppCompatActivity {
 
         FirebaseApp.initializeApp( MainActivity.this);
         storageReference = FirebaseStorage.getInstance().getReference();
+        auth = FirebaseAuth.getInstance();
+        button_logOut = findViewById(R.id.button_LogOut);
+        textView = findViewById(R.id.user_details);
+        user = auth.getCurrentUser();
+        if (user == null){
+            Intent intent = new Intent(getApplicationContext(), Login.class);
+            startActivity(intent);
+            finish();
+        }else{
+            textView.setText(user.getEmail());
+        }
+        button_logOut.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                FirebaseAuth.getInstance().signOut();
+                Intent intent = new Intent(getApplicationContext(), Login.class);
+                startActivity(intent);
+                finish();
+            }
+        });
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
         progress = findViewById(R.id.progress);
         imageView = findViewById(R.id.imageView);
-        selectImage = findViewById(R.id.button_selectImage);
+        selectImage = findViewById(R.id.button_Login);
         uploadImage = findViewById(R.id.button_uploadImage);
 
         selectImage.setOnClickListener(new View.OnClickListener() {

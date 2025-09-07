@@ -15,10 +15,36 @@
         android:background="?attr/colorPrimary"
         app:layout_constraintBottom_toTopOf="@+id/imageView"
         app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.2"
+        app:layout_constraintVertical_bias="0.0"
         app:titleCentered="true"
         app:titleTextColor="?attr/colorSurface"
-        tools:layout_editor_absoluteX="0dp" />
+        tools:layout_editor_absoluteX="-7dp" />
+
+    <TextView
+        android:id="@+id/user_details"
+        android:layout_width="205dp"
+        android:layout_height="45dp"
+        android:gravity="left"
+        android:text="Hello World!"
+        app:layout_constraintBottom_toTopOf="@+id/imageView"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.261"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/toolbar"
+        app:layout_constraintVertical_bias="0.0" />
+
+    <Button
+        android:text="Log Out"
+        android:id="@+id/button_LogOut"
+        android:layout_width="130dp"
+        android:layout_height="42dp"
+
+        app:layout_constraintBottom_toBottomOf="@+id/user_details"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.681"
+        app:layout_constraintStart_toEndOf="@+id/user_details"
+        app:layout_constraintTop_toTopOf="@+id/user_details"
+        app:layout_constraintVertical_bias="0.0" />
 
     <com.google.android.material.progressindicator.LinearProgressIndicator
         android:id="@+id/progress"
@@ -40,7 +66,7 @@
         tools:srcCompat="@tools:sample/backgrounds/scenic" />
 
     <com.google.android.material.button.MaterialButton
-        android:id="@+id/button_selectImage"
+        android:id="@+id/button_Login"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="Select Image"
@@ -59,6 +85,6 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.493"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/button_selectImage"
+        app:layout_constraintTop_toBottomOf="@+id/button_Login"
         app:layout_constraintVertical_bias="0.075" />
 </androidx.constraintlayout.widget.ConstraintLayout>
