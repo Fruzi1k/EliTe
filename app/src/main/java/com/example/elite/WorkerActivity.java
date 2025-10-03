@@ -32,11 +32,10 @@ import com.google.firebase.storage.UploadTask;
 import java.util.UUID;
 
 public class WorkerActivity extends AppCompatActivity {
-    //TODO имплементировать класс
     StorageReference storageReference;
     LinearProgressIndicator progress;
-    Uri image;
-    MaterialButton selectImage, uploadImage;
+    Uri image , video;
+    MaterialButton selectImage, uploadImage, selectVideo , uploadVideo;
     ImageView imageView;
     FirebaseAuth auth;
     FirebaseUser user;
@@ -50,8 +49,10 @@ public class WorkerActivity extends AppCompatActivity {
                         public void onActivityResult(ActivityResult result) {
                             if (result.getResultCode() == RESULT_OK && result.getData() != null) {
                                 image = result.getData().getData();
+                                video = result.getData().getData();
                                 uploadImage.setEnabled(true);
                                 Glide.with(getApplicationContext()).load(image).into(imageView);
+                                Glide.with(getApplicationContext()).load(video).into(imageView);
                             } else {
                                 Toast.makeText(WorkerActivity.this, "Please select an image", Toast.LENGTH_SHORT).show();
                             }
@@ -94,6 +95,8 @@ public class WorkerActivity extends AppCompatActivity {
         imageView = findViewById(R.id.imageview_worker);
         selectImage = findViewById(R.id.button_select_image_worker);
         uploadImage = findViewById(R.id.button_upload_image_worker);
+        selectVideo = findViewById(R.id.button_select_video);
+        uploadVideo = findViewById(R.id.button_upload_video);
 
         selectImage.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -111,6 +114,24 @@ public class WorkerActivity extends AppCompatActivity {
             }
         });
 
+        selectVideo.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(Intent.ACTION_PICK);
+                intent.setType("video/*");
+                activityResultLauncher.launch(intent);
+            }
+        });
+
+        uploadVideo.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                uploadVideo(video);
+            }
+        });
+
+
+
 
     }
 
@@ -120,6 +141,29 @@ public class WorkerActivity extends AppCompatActivity {
             @Override
             public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
                 Toast.makeText(WorkerActivity.this, "Image uploaded successfully", Toast.LENGTH_SHORT).show();
+            }
+        }).addOnFailureListener(new OnFailureListener() {
+            @Override
+            public void onFailure(@NonNull Exception e) {
+                Toast.makeText(WorkerActivity.this, "There was an error while uploading", Toast.LENGTH_SHORT).show();
+            }
+        }).addOnProgressListener(new OnProgressListener<UploadTask.TaskSnapshot>() {
+            @Override
+            public void onProgress(@NonNull UploadTask.TaskSnapshot snapshot) {
+                progress.setMax(Math.toIntExact(snapshot.getTotalByteCount()));
+                progress.setProgress(Math.toIntExact(snapshot.getTotalByteCount()));
+
+
+            }
+        });
+    }
+
+    private void uploadVideo(Uri video) {
+        StorageReference reference = storageReference.child("videos/" + UUID.randomUUID().toString());
+        reference.putFile(video).addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
+            @Override
+            public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
+                Toast.makeText(WorkerActivity.this, "Video uploaded successfully", Toast.LENGTH_SHORT).show();
             }
         }).addOnFailureListener(new OnFailureListener() {
             @Override

@@ -78,7 +78,7 @@ public class Registration extends AppCompatActivity {
                                     String uid = firebaseUser.getUid();
 
                                     // default role = worker
-                                    User user = new User(uid, email, password, "director");
+                                    User user = new User(uid, email, password, "worker");
 
                                     db.collection("users").document(uid)
                                             .set(user)
