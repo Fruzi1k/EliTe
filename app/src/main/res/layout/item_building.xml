@@ -1,0 +1,128 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.cardview.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_margin="8dp"
+    app:cardCornerRadius="12dp"
+    app:cardElevation="4dp">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:padding="16dp">
+
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:orientation="vertical">
+
+            <TextView
+                android:id="@+id/buildingName"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Project Name"
+                android:textSize="18sp"
+                android:textStyle="bold"
+                android:textColor="?attr/colorOnSurface" />
+
+            <TextView
+                android:id="@+id/buildingStreet"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Street Address"
+                android:textSize="14sp"
+                android:layout_marginTop="4dp"
+                android:textColor="?attr/colorOnSurfaceVariant" />
+
+            <TextView
+                android:id="@+id/buildingCityAndCode"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="City, Postal Code"
+                android:textSize="14sp"
+                android:layout_marginTop="2dp"
+                android:textColor="?attr/colorOnSurfaceVariant" />
+
+            <TextView
+                android:id="@+id/buildingMapsInfo"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="📍 Google Maps Available"
+                android:textSize="12sp"
+                android:layout_marginTop="4dp"
+                android:textColor="?attr/colorPrimary"
+                android:visibility="gone" />
+
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:layout_gravity="center_vertical">
+
+            <!-- Первая строчка: Копировать и Редактирование -->
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal">
+
+                <ImageButton
+                    android:id="@+id/button_copy_address"
+                    android:layout_width="40dp"
+                    android:layout_height="40dp"
+                    android:layout_marginEnd="8dp"
+                    android:background="?attr/selectableItemBackgroundBorderless"
+                    android:src="@drawable/ic_copy"
+                    android:contentDescription="Copy address"
+                    android:scaleType="centerInside" />
+
+                <ImageButton
+                    android:id="@+id/button_edit_building"
+                    android:layout_width="40dp"
+                    android:layout_height="40dp"
+                    android:background="?attr/selectableItemBackgroundBorderless"
+                    android:src="@drawable/ic_edit"
+                    android:contentDescription="Edit building"
+                    android:scaleType="centerInside" />
+
+            </LinearLayout>
+
+            <!-- Вторая строчка: Карты и Удаление -->
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:layout_marginTop="8dp">
+
+                <ImageButton
+                    android:id="@+id/button_open_maps"
+                    android:layout_width="40dp"
+                    android:layout_height="40dp"
+                    android:layout_marginEnd="8dp"
+                    android:background="?attr/selectableItemBackgroundBorderless"
+                    android:contentDescription="Open in Maps"
+                    android:scaleType="centerInside"
+                    android:src="@drawable/ic_location" />
+
+                <ImageButton
+                    android:id="@+id/button_delete_building"
+                    android:layout_width="40dp"
+                    android:layout_height="40dp"
+                    android:background="?attr/selectableItemBackgroundBorderless"
+                    android:contentDescription="Delete building"
+                    android:scaleType="centerInside"
+                    android:src="@drawable/ic_delete" />
+
+            </LinearLayout>
+
+        </LinearLayout>
+
+    </LinearLayout>
+
+</androidx.cardview.widget.CardView>
