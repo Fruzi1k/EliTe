@@ -22,6 +22,7 @@ import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.progressindicator.LinearProgressIndicator;
+import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.storage.FirebaseStorage;
@@ -41,6 +42,7 @@ public class WorkerActivity extends AppCompatActivity {
     FirebaseUser user;
     Button button_logOut;
     TextView textView;
+    BottomNavigationView bottomNavigationView;
 
     private final ActivityResultLauncher<Intent> activityResultLauncher =
             registerForActivityResult(new ActivityResultContracts.StartActivityForResult(),
@@ -97,6 +99,26 @@ public class WorkerActivity extends AppCompatActivity {
         uploadImage = findViewById(R.id.button_upload_image_worker);
         selectVideo = findViewById(R.id.button_select_video);
         uploadVideo = findViewById(R.id.button_upload_video);
+
+        // Initialize Bottom Navigation
+        bottomNavigationView = findViewById(R.id.bottom_navigation_worker);
+        bottomNavigationView.setOnItemSelectedListener(item -> {
+            int itemId = item.getItemId();
+            if (itemId == R.id.nav_profile) {
+                startActivity(new Intent(this, Profile.class));
+                return true;
+            } else if (itemId == R.id.nav_work) {
+                // Already on work page
+                return true;
+            } else if (itemId == R.id.nav_work_hour) {
+                startActivity(new Intent(this, HoursFragmentWorker.class));
+                return true;
+            }
+            return false;
+        });
+
+        // Set default selection
+        bottomNavigationView.setSelectedItemId(R.id.nav_work);
 
         selectImage.setOnClickListener(new View.OnClickListener() {
             @Override

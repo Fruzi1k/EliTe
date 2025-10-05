@@ -38,12 +38,29 @@
             android:name=".MainActivity"
             android:exported="true" />
 
+        <!-- Профиль пользователя -->
+        <activity
+            android:name=".Profile"
+            android:exported="true" />
+
         <!-- Активности по ролям -->
         <activity
             android:name=".WorkerActivity"
             android:exported="true" />
         <activity
             android:name=".DirectorActivity"
+            android:exported="true" />
+        <activity
+            android:name=".WorkHourActivity"
+            android:exported="true" />
+        <activity
+            android:name=".BuildingActivity"
+            android:exported="true" />
+        <activity
+            android:name=".HoursFragmentDirector"
+            android:exported="true" />
+        <activity
+            android:name=".HoursFragmentWorker"
             android:exported="true" />
 
     </application>

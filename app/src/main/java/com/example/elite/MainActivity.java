@@ -23,9 +23,11 @@ import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.progressindicator.LinearProgressIndicator;
+import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.firebase.FirebaseApp;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.OnProgressListener;
 import com.google.firebase.storage.StorageReference;
@@ -41,8 +43,10 @@ public class MainActivity extends AppCompatActivity {
     ImageView imageView;
     FirebaseAuth auth;
     FirebaseUser user;
+    FirebaseFirestore db;
     Button button_logOut;
     TextView textView;
+    BottomNavigationView bottomNavigationView;
 
 
     private  final ActivityResultLauncher<Intent> activityResultLauncher = registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), new ActivityResultCallback<ActivityResult>() {
@@ -74,6 +78,7 @@ public class MainActivity extends AppCompatActivity {
         FirebaseApp.initializeApp( MainActivity.this);
         storageReference = FirebaseStorage.getInstance().getReference();
         auth = FirebaseAuth.getInstance();
+        db = FirebaseFirestore.getInstance();
         button_logOut = findViewById(R.id.button_LogOut);
         textView = findViewById(R.id.user_details);
         user = auth.getCurrentUser();
@@ -83,6 +88,8 @@ public class MainActivity extends AppCompatActivity {
             finish();
         }else{
             textView.setText(user.getEmail());
+            // Redirect to Profile instead of staying on MainActivity
+            redirectToProfile();
         }
         button_logOut.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -117,6 +124,66 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
+        // Initialize Bottom Navigation
+        bottomNavigationView = findViewById(R.id.bottom_navigation_main);
+        bottomNavigationView.setOnItemSelectedListener(item -> {
+            int itemId = item.getItemId();
+            if (itemId == R.id.nav_profile) {
+                redirectToProfile();
+                return true;
+            } else if (itemId == R.id.nav_work) {
+                // Navigate to work section based on user role
+                navigateToWorkSection();
+                return true;
+            } else if (itemId == R.id.nav_work_hour) {
+                startActivity(new Intent(this, WorkHourActivity.class));
+                finish();
+                return true;
+            }
+            return false;
+        });
+
+        // Set default selection
+        bottomNavigationView.setSelectedItemId(R.id.nav_profile);
+
+    }
+
+    private void redirectToProfile() {
+        Intent intent = new Intent(this, Profile.class);
+        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+        startActivity(intent);
+        finish();
+    }
+
+    private void navigateToWorkSection() {
+        if (user == null) return;
+        
+        // Load user role from Firestore and navigate accordingly
+        db.collection("users")
+                .document(user.getUid())
+                .get()
+                .addOnSuccessListener(documentSnapshot -> {
+                    if (documentSnapshot.exists()) {
+                        User currentUser = documentSnapshot.toObject(User.class);
+                        if (currentUser != null) {
+                            Intent intent;
+                            if (currentUser.isDirector()) {
+                                intent = new Intent(this, DirectorActivity.class);
+                            } else {
+                                intent = new Intent(this, WorkerActivity.class);
+                            }
+                            startActivity(intent);
+                        }
+                    } else {
+                        // Default to WorkerActivity if no role found
+                        startActivity(new Intent(this, WorkerActivity.class));
+                    }
+                })
+                .addOnFailureListener(e -> {
+                    Toast.makeText(this, "Error loading user role", Toast.LENGTH_SHORT).show();
+                    // Default to WorkerActivity on error
+                    startActivity(new Intent(this, WorkerActivity.class));
+                });
     }
 
     private void uploadImage(Uri image) {
