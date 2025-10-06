@@ -7,6 +7,8 @@ import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.EditText;
@@ -166,10 +168,35 @@ public class DirectorActivity extends AppCompatActivity implements BuildingAdapt
         // Pre-fill fields if editing existing building
         if (existingBuilding != null) {
             editName.setText(existingBuilding.getName());
+            editName.setEnabled(false); // Делаем поле названия нередактируемым при редактировании
+            editName.setAlpha(0.6f); // Визуально показываем, что поле неактивно
             editStreet.setText(existingBuilding.getStreet());
             editCity.setText(existingBuilding.getCity());
             editPostalCode.setText(existingBuilding.getCode());
             editMapsUrl.setText(existingBuilding.getGoogleMapsUrl());
+        } else {
+            // При создании нового проекта поле названия доступно для редактирования
+            editName.setEnabled(true);
+            editName.setAlpha(1.0f);
+            
+            // Добавляем валидацию в реальном времени для названия проекта
+            editName.addTextChangedListener(new TextWatcher() {
+                @Override
+                public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+
+                @Override
+                public void onTextChanged(CharSequence s, int start, int before, int count) {
+                    String text = s.toString();
+                    if (containsInvalidCharacters(text)) {
+                        editName.setError("Invalid characters: < > \" ? * / \\ : |");
+                    } else {
+                        editName.setError(null);
+                    }
+                }
+
+                @Override
+                public void afterTextChanged(Editable s) {}
+            });
         }
         
         buttonOpenMaps.setOnClickListener(v -> {
@@ -201,6 +228,14 @@ public class DirectorActivity extends AppCompatActivity implements BuildingAdapt
                 String postalCode = editPostalCode.getText().toString().trim();
                 String mapsUrl = editMapsUrl.getText().toString().trim();
                 
+                // Для редактирования используем исходное название
+                if (existingBuilding != null) {
+                    name = existingBuilding.getName();
+                } else {
+                    // Для нового проекта форматируем название (первая буква заглавная)
+                    name = formatProjectName(name);
+                }
+                
                 if (validateInput(name, street)) {
                     if (existingBuilding == null) {
                         addBuilding(name, street, city, postalCode, mapsUrl);
@@ -221,12 +256,44 @@ public class DirectorActivity extends AppCompatActivity implements BuildingAdapt
             return false;
         }
         
+        // Проверка на недопустимые символы в названии проекта
+        if (containsInvalidCharacters(name)) {
+            Toast.makeText(this, "Project name contains invalid characters. Forbidden: < > \" ? * / \\ : |", Toast.LENGTH_LONG).show();
+            return false;
+        }
+        
         if (street.isEmpty()) {
             Toast.makeText(this, "Please enter street address", Toast.LENGTH_SHORT).show();
             return false;
         }
         
         return true;
+    }
+    
+    private boolean containsInvalidCharacters(String text) {
+        // Запрещенные символы для названий файлов/папок в Windows и других системах
+        String invalidChars = "<>\"?*/\\:|";
+        for (char c : invalidChars.toCharArray()) {
+            if (text.indexOf(c) != -1) {
+                return true;
+            }
+        }
+        return false;
+    }
+    
+    private String formatProjectName(String name) {
+        if (name == null || name.trim().isEmpty()) {
+            return name;
+        }
+        
+        // Убираем лишние пробелы и делаем первую букву заглавной
+        String trimmedName = name.trim().replaceAll("\\s+", " "); // Заменяем множественные пробелы на один
+        if (trimmedName.length() == 0) {
+            return trimmedName;
+        }
+        
+        // Делаем первую букву заглавной, остальные оставляем как есть
+        return trimmedName.substring(0, 1).toUpperCase() + trimmedName.substring(1);
     }
 
     private void addBuilding(String name, String street, String city, String postalCode, String mapsUrl) {

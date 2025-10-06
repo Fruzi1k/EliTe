@@ -1,5 +1,6 @@
 package com.example.elite;
 
+import android.app.AlertDialog;
 import android.content.ClipData;
 import android.content.ClipboardManager;
 import android.content.Context;
@@ -10,11 +11,26 @@ import android.view.View;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.activity.result.ActivityResult;
+import androidx.activity.result.ActivityResultCallback;
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.material.appbar.MaterialToolbar;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.card.MaterialCardView;
+import com.google.android.material.floatingactionbutton.FloatingActionButton;
+import com.google.android.material.progressindicator.LinearProgressIndicator;
+import com.google.firebase.storage.FirebaseStorage;
+import com.google.firebase.storage.OnProgressListener;
+import com.google.firebase.storage.StorageReference;
+import com.google.firebase.storage.UploadTask;
+
+import java.util.UUID;
 
 public class BuildingDetailActivity extends AppCompatActivity {
     
@@ -25,13 +41,27 @@ public class BuildingDetailActivity extends AppCompatActivity {
     private MaterialButton buttonCopyAddress, buttonOpenMaps, buttonEdit;
     private MaterialToolbar toolbar;
     private MaterialCardView mapsCard;
+    private FloatingActionButton fabAddMedia;
+    
+    // Firebase Storage
+    private StorageReference storageReference;
+    private LinearProgressIndicator progressIndicator;
+    private Uri selectedFileUri;
+    
+    // Activity Result Launchers
+    private ActivityResultLauncher<Intent> imagePickerLauncher;
+    private ActivityResultLauncher<Intent> videoPickerLauncher;
     
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_building_detail);
         
+        // Initialize Firebase Storage
+        storageReference = FirebaseStorage.getInstance().getReference();
+        
         initViews();
+        setupActivityResultLaunchers();
         getBuildingFromIntent();
         setupToolbar();
         setupClickListeners();
@@ -49,6 +79,8 @@ public class BuildingDetailActivity extends AppCompatActivity {
         buttonOpenMaps = findViewById(R.id.button_open_maps);
         buttonEdit = findViewById(R.id.button_edit);
         mapsCard = findViewById(R.id.maps_card);
+        fabAddMedia = findViewById(R.id.fab_add_media);
+        progressIndicator = findViewById(R.id.progress_indicator);
     }
     
     private void getBuildingFromIntent() {
@@ -61,6 +93,40 @@ public class BuildingDetailActivity extends AppCompatActivity {
             Toast.makeText(this, "Error loading building details", Toast.LENGTH_SHORT).show();
             finish();
         }
+    }
+    
+    private void setupActivityResultLaunchers() {
+        // Image picker launcher
+        imagePickerLauncher = registerForActivityResult(
+                new ActivityResultContracts.StartActivityForResult(),
+                new ActivityResultCallback<ActivityResult>() {
+                    @Override
+                    public void onActivityResult(ActivityResult result) {
+                        if (result.getResultCode() == RESULT_OK && result.getData() != null) {
+                            selectedFileUri = result.getData().getData();
+                            if (selectedFileUri != null) {
+                                uploadMedia(selectedFileUri, "images");
+                            }
+                        }
+                    }
+                }
+        );
+        
+        // Video picker launcher
+        videoPickerLauncher = registerForActivityResult(
+                new ActivityResultContracts.StartActivityForResult(),
+                new ActivityResultCallback<ActivityResult>() {
+                    @Override
+                    public void onActivityResult(ActivityResult result) {
+                        if (result.getResultCode() == RESULT_OK && result.getData() != null) {
+                            selectedFileUri = result.getData().getData();
+                            if (selectedFileUri != null) {
+                                uploadMedia(selectedFileUri, "videos");
+                            }
+                        }
+                    }
+                }
+        );
     }
     
     private void setupToolbar() {
@@ -77,6 +143,7 @@ public class BuildingDetailActivity extends AppCompatActivity {
         buttonCopyAddress.setOnClickListener(v -> copyAddressToClipboard());
         buttonOpenMaps.setOnClickListener(v -> openGoogleMaps());
         buttonEdit.setOnClickListener(v -> editBuilding());
+        fabAddMedia.setOnClickListener(v -> showMediaChoiceDialog());
     }
     
     private void displayBuildingInfo() {
@@ -149,5 +216,76 @@ public class BuildingDetailActivity extends AppCompatActivity {
         resultIntent.putExtra("building", building);
         setResult(RESULT_OK, resultIntent);
         finish();
+    }
+    
+    private void showMediaChoiceDialog() {
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setTitle("Add Media to Project")
+                .setMessage("Choose the type of media you want to upload:")
+                .setPositiveButton("Image", (dialog, which) -> selectImage())
+                .setNegativeButton("Video", (dialog, which) -> selectVideo())
+                .setNeutralButton("Cancel", null)
+                .show();
+    }
+    
+    private void selectImage() {
+        Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
+        intent.setType("image/*");
+        imagePickerLauncher.launch(intent);
+    }
+    
+    private void selectVideo() {
+        Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
+        intent.setType("video/*");
+        videoPickerLauncher.launch(intent);
+    }
+    
+    private void uploadMedia(Uri fileUri, String mediaType) {
+        if (fileUri == null || building == null) {
+            Toast.makeText(this, "Error: No file selected", Toast.LENGTH_SHORT).show();
+            return;
+        }
+        
+        // Show progress
+        if (progressIndicator != null) {
+            progressIndicator.setVisibility(View.VISIBLE);
+        }
+        
+        // Create reference with building-specific path
+        String fileName = UUID.randomUUID().toString();
+        String path = mediaType + "/" + building.getId() + "/" + fileName;
+        StorageReference reference = storageReference.child(path);
+        
+        reference.putFile(fileUri)
+                .addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
+                    @Override
+                    public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
+                        if (progressIndicator != null) {
+                            progressIndicator.setVisibility(View.GONE);
+                        }
+                        String mediaTypeText = "image".equals(mediaType) ? "Image" : "Video";
+                        Toast.makeText(BuildingDetailActivity.this, 
+                                mediaTypeText + " uploaded successfully!", Toast.LENGTH_SHORT).show();
+                    }
+                })
+                .addOnFailureListener(new OnFailureListener() {
+                    @Override
+                    public void onFailure(@NonNull Exception e) {
+                        if (progressIndicator != null) {
+                            progressIndicator.setVisibility(View.GONE);
+                        }
+                        Toast.makeText(BuildingDetailActivity.this, 
+                                "Upload failed: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                    }
+                })
+                .addOnProgressListener(new OnProgressListener<UploadTask.TaskSnapshot>() {
+                    @Override
+                    public void onProgress(@NonNull UploadTask.TaskSnapshot snapshot) {
+                        if (progressIndicator != null) {
+                            double progress = (100.0 * snapshot.getBytesTransferred()) / snapshot.getTotalByteCount();
+                            progressIndicator.setProgress((int) progress);
+                        }
+                    }
+                });
     }
 }
