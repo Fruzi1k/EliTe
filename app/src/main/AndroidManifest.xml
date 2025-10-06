@@ -51,6 +51,9 @@
             android:name=".DirectorActivity"
             android:exported="true" />
         <activity
+            android:name=".BuildingDetailActivity"
+            android:exported="true" />
+        <activity
             android:name=".WorkHourActivity"
             android:exported="true" />
         <activity

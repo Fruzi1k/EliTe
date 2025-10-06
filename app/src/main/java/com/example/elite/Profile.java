@@ -18,6 +18,9 @@ import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 
+import java.util.HashMap;
+import java.util.Map;
+
 public class Profile extends AppCompatActivity {
 
     private FirebaseAuth mAuth;
@@ -96,28 +99,37 @@ public class Profile extends AppCompatActivity {
 
         showLoading(true);
 
-        // Load user data from Firestore
+        // Load user data from Firestore with real-time updates
         db.collection("users")
                 .document(firebaseUser.getUid())
-                .get()
-                .addOnSuccessListener(documentSnapshot -> {
+                .addSnapshotListener(this, (documentSnapshot, e) -> {
                     showLoading(false);
-                    if (documentSnapshot.exists()) {
-                        currentUser = documentSnapshot.toObject(User.class);
-                        if (currentUser != null) {
-                            currentUser.setUid(firebaseUser.getUid());
-                            currentUser.setEmail(firebaseUser.getEmail());
+                    
+                    if (e != null) {
+                        Log.e("Profile", "Listen failed.", e);
+                        Toast.makeText(this, "Error loading profile", Toast.LENGTH_SHORT).show();
+                        return;
+                    }
+                    
+                    if (documentSnapshot != null && documentSnapshot.exists()) {
+                        User newUser = documentSnapshot.toObject(User.class);
+                        if (newUser != null) {
+                            newUser.setUid(firebaseUser.getUid());
+                            newUser.setEmail(firebaseUser.getEmail());
+                            
+                            // Проверяем, изменилась ли должность
+                            if (currentUser != null && !newUser.getPosition().equals(currentUser.getPosition())) {
+                                Toast.makeText(this, "Ваша должность обновлена до: " + getPositionDisplayName(newUser.getPosition()), 
+                                        Toast.LENGTH_LONG).show();
+                            }
+                            
+                            currentUser = newUser;
                             displayUserInfo();
                         }
                     } else {
                         // User document doesn't exist, create with basic info
                         createUserDocument(firebaseUser);
                     }
-                })
-                .addOnFailureListener(e -> {
-                    showLoading(false);
-                    Log.e("Profile", "Error loading user profile", e);
-                    Toast.makeText(this, "Error loading profile", Toast.LENGTH_SHORT).show();
                 });
     }
 
@@ -126,12 +138,11 @@ public class Profile extends AppCompatActivity {
                 firebaseUser.getUid(),
                 firebaseUser.getEmail(),
                 "",
-                "worker", // default role
-                "",
-                "",
-                "",
-                "Сотрудник"
+                "worker" // default position
         );
+        currentUser.setFirstName("");
+        currentUser.setLastName("");
+        currentUser.setPhone("");
 
         db.collection("users")
                 .document(firebaseUser.getUid())
@@ -158,16 +169,18 @@ public class Profile extends AppCompatActivity {
         String position = currentUser.getPosition();
         textPosition.setText(position != null && !position.trim().isEmpty() ? position : "Не указана");
         
-        String role = currentUser.getRole();
-        String roleText = "";
-        if ("director".equalsIgnoreCase(role)) {
-            roleText = "Директор";
-        } else if ("worker".equalsIgnoreCase(role)) {
-            roleText = "Работник";
-        } else {
-            roleText = "Не указана";
-        }
+        String roleText = getPositionDisplayName(position);
         textRole.setText(roleText);
+    }
+
+    private String getPositionDisplayName(String position) {
+        if ("director".equalsIgnoreCase(position)) {
+            return "Директор";
+        } else if ("worker".equalsIgnoreCase(position)) {
+            return "Работник";
+        } else {
+            return position != null && !position.trim().isEmpty() ? position : "Не указана";
+        }
     }
 
     private void navigateToWork() {
@@ -196,7 +209,30 @@ public class Profile extends AppCompatActivity {
 
     private void editProfile() {
         // TODO: Implement profile editing
+        // Временно добавим очистку старых полей
+        cleanupUserDocument();
         Toast.makeText(this, "Edit profile functionality coming soon", Toast.LENGTH_SHORT).show();
+    }
+
+    // Временная функция для очистки старых полей
+    private void cleanupUserDocument() {
+        if (currentUser != null) {
+            String userId = currentUser.getUid();
+            Map<String, Object> updates = new HashMap<>();
+            updates.put("role", null); // Удаляем поле role
+            updates.put("director", null); // Удаляем поле director
+            updates.put("worker", null); // Удаляем поле worker
+            updates.put("fullName", null); // Удаляем поле fullName
+            
+            db.collection("users").document(userId)
+                    .update(updates)
+                    .addOnSuccessListener(aVoid -> {
+                        Toast.makeText(this, "User document cleaned up", Toast.LENGTH_SHORT).show();
+                    })
+                    .addOnFailureListener(e -> {
+                        Log.e("Profile", "Failed to cleanup document", e);
+                    });
+        }
     }
 
     private void logout() {

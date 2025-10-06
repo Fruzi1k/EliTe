@@ -1,27 +1,25 @@
 package com.example.elite;
 
-public class Building {
+import java.io.Serializable;
+
+public class Building implements Serializable {
     private String id;
     private String name; // Project name
     private String code; // Postal code
     private String city;
     private String street; // Street address
-    private String googleMapsUrl; // Google Maps URL instead of lat/lng
-    private double lat; // Keep for backward compatibility
-    private double lng; // Keep for backward compatibility
+    private String googleMapsUrl; // Google Maps URL
 
     public Building() {
     }
 
-    public Building(String id, String name, String city, String street, String code, String googleMapsUrl, double lat, double lng) {
+    public Building(String id, String name, String city, String street, String code, String googleMapsUrl) {
         this.id = id;
         this.name = name;
         this.city = city;
         this.street = street;
         this.code = code;
         this.googleMapsUrl = googleMapsUrl;
-        this.lat = lat;
-        this.lng = lng;
     }
 
     // Getters
@@ -49,14 +47,6 @@ public class Building {
         return googleMapsUrl;
     }
 
-    public double getLat() {
-        return lat;
-    }
-
-    public double getLng() {
-        return lng;
-    }
-
     // Setters
     public void setId(String id) {
         this.id = id;
@@ -80,14 +70,6 @@ public class Building {
 
     public void setGoogleMapsUrl(String googleMapsUrl) {
         this.googleMapsUrl = googleMapsUrl;
-    }
-
-    public void setLat(double lat) {
-        this.lat = lat;
-    }
-
-    public void setLng(double lng) {
-        this.lng = lng;
     }
 
     // Helper method to get full address for copying

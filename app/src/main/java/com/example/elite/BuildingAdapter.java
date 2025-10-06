@@ -22,6 +22,7 @@ public class BuildingAdapter extends RecyclerView.Adapter<BuildingAdapter.ViewHo
         void onEditBuilding(Building building);
         void onCopyAddress(Building building);
         void onOpenMaps(Building building);
+        void onBuildingClick(Building building); // Добавляем клик по элементу
     }
 
     public BuildingAdapter(Context context, List<Building> buildingList, OnBuildingActionListener listener) {
@@ -99,6 +100,13 @@ public class BuildingAdapter extends RecyclerView.Adapter<BuildingAdapter.ViewHo
         holder.buttonDelete.setOnClickListener(v -> {
             if (listener != null) {
                 listener.onDeleteBuilding(building);
+            }
+        });
+
+        // Добавляем клик на весь элемент для открытия детальной информации
+        holder.itemView.setOnClickListener(v -> {
+            if (listener != null) {
+                listener.onBuildingClick(building);
             }
         });
     }

@@ -137,9 +137,7 @@ public class DirectorActivity extends AppCompatActivity implements BuildingAdapt
                                     document.getString("city"),
                                     document.getString("street"),
                                     document.getString("code"),
-                                    document.getString("googleMapsUrl"),
-                                    document.getDouble("lat") != null ? document.getDouble("lat") : 0.0,
-                                    document.getDouble("lng") != null ? document.getDouble("lng") : 0.0
+                                    document.getString("googleMapsUrl")
                             );
                             buildingsList.add(building);
                         }
@@ -238,8 +236,6 @@ public class DirectorActivity extends AppCompatActivity implements BuildingAdapt
         building.put("city", city);
         building.put("code", postalCode);
         building.put("googleMapsUrl", mapsUrl);
-        building.put("lat", 0.0); // Default values for backward compatibility
-        building.put("lng", 0.0);
         
         db.collection("buildings")
                 .add(building)
@@ -260,8 +256,6 @@ public class DirectorActivity extends AppCompatActivity implements BuildingAdapt
         updates.put("city", city);
         updates.put("code", postalCode);
         updates.put("googleMapsUrl", mapsUrl);
-        updates.put("lat", 0.0);
-        updates.put("lng", 0.0);
         
         db.collection("buildings").document(buildingId)
                 .update(updates)
@@ -362,6 +356,29 @@ public class DirectorActivity extends AppCompatActivity implements BuildingAdapt
         } else {
             textEmptyState.setVisibility(View.GONE);
             recyclerViewBuildings.setVisibility(View.VISIBLE);
+        }
+    }
+
+    @Override
+    public void onBuildingClick(Building building) {
+        // Открываем детальную информацию о здании
+        Intent intent = new Intent(this, BuildingDetailActivity.class);
+        intent.putExtra(BuildingDetailActivity.EXTRA_BUILDING, building);
+        startActivityForResult(intent, 100); // Код запроса для получения результата
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        
+        if (requestCode == 100 && resultCode == RESULT_OK && data != null) {
+            String action = data.getStringExtra("action");
+            if ("edit".equals(action)) {
+                Building buildingToEdit = (Building) data.getSerializableExtra("building");
+                if (buildingToEdit != null) {
+                    showAddBuildingDialog(buildingToEdit);
+                }
+            }
         }
     }
 }

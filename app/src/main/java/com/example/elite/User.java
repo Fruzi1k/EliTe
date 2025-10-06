@@ -4,31 +4,29 @@ public class User {
     private String uid;
     private String email;
     private String password;
-    private String role;
     private String firstName;
     private String lastName;
     private String phone;
-    private String position; // должность
+    private String position; // должность (раньше было role)
 
     public User() {
     }
 
-    public User(String uid, String email, String password, String role) {
+    public User(String uid, String email, String password, String position) {
         this.uid = uid;
         this.email = email;
         this.password = password;
-        this.role = role;
+        this.position = position;
     }
 
-    public User(String uid, String email, String password, String role, String firstName, String lastName, String phone, String position) {
+    public User(String uid, String email, String password, String position, String firstName, String lastName, String phone) {
         this.uid = uid;
         this.email = email;
         this.password = password;
-        this.role = role;
+        this.position = position;
         this.firstName = firstName;
         this.lastName = lastName;
         this.phone = phone;
-        this.position = position;
     }
 
     // Getters
@@ -44,8 +42,8 @@ public class User {
         return password;
     }
 
-    public String getRole() {
-        return role;
+    public String getPosition() {
+        return position;
     }
 
     public String getFirstName() {
@@ -58,10 +56,6 @@ public class User {
 
     public String getPhone() {
         return phone;
-    }
-
-    public String getPosition() {
-        return position;
     }
 
     // Setters
@@ -77,8 +71,8 @@ public class User {
         this.password = password;
     }
 
-    public void setRole(String role) {
-        this.role = role;
+    public void setPosition(String position) {
+        this.position = position;
     }
 
     public void setFirstName(String firstName) {
@@ -91,10 +85,6 @@ public class User {
 
     public void setPhone(String phone) {
         this.phone = phone;
-    }
-
-    public void setPosition(String position) {
-        this.position = position;
     }
 
     // Helper methods
@@ -111,10 +101,10 @@ public class User {
     }
 
     public boolean isDirector() {
-        return "director".equalsIgnoreCase(role);
+        return "director".equalsIgnoreCase(position);
     }
 
     public boolean isWorker() {
-        return "worker".equalsIgnoreCase(role);
+        return "worker".equalsIgnoreCase(position);
     }
 }
