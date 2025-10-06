@@ -25,12 +25,18 @@ import com.google.android.material.button.MaterialButton;
 import com.google.android.material.card.MaterialCardView;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.progressindicator.LinearProgressIndicator;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.OnProgressListener;
 import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
 
-import java.util.UUID;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.Locale;
 
 public class BuildingDetailActivity extends AppCompatActivity {
     
@@ -45,6 +51,10 @@ public class BuildingDetailActivity extends AppCompatActivity {
     
     // Firebase Storage
     private StorageReference storageReference;
+    
+    // Firebase Auth and Firestore for user information
+    private FirebaseAuth auth;
+    private FirebaseFirestore firestore;
     private LinearProgressIndicator progressIndicator;
     private Uri selectedFileUri;
     
@@ -59,6 +69,10 @@ public class BuildingDetailActivity extends AppCompatActivity {
         
         // Initialize Firebase Storage
         storageReference = FirebaseStorage.getInstance().getReference();
+        
+        // Initialize Firebase Auth and Firestore
+        auth = FirebaseAuth.getInstance();
+        firestore = FirebaseFirestore.getInstance();
         
         initViews();
         setupActivityResultLaunchers();
@@ -246,46 +260,94 @@ public class BuildingDetailActivity extends AppCompatActivity {
             return;
         }
         
+        FirebaseUser currentUser = auth.getCurrentUser();
+        if (currentUser == null) {
+            Toast.makeText(this, "Error: User not authenticated", Toast.LENGTH_SHORT).show();
+            return;
+        }
+        
         // Show progress
         if (progressIndicator != null) {
             progressIndicator.setVisibility(View.VISIBLE);
         }
         
-        // Create reference with building-specific path
-        String fileName = UUID.randomUUID().toString();
-        String path = mediaType + "/" + building.getId() + "/" + fileName;
-        StorageReference reference = storageReference.child(path);
-        
-        reference.putFile(fileUri)
-                .addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
-                    @Override
-                    public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
-                        if (progressIndicator != null) {
-                            progressIndicator.setVisibility(View.GONE);
-                        }
-                        String mediaTypeText = "image".equals(mediaType) ? "Image" : "Video";
-                        Toast.makeText(BuildingDetailActivity.this, 
-                                mediaTypeText + " uploaded successfully!", Toast.LENGTH_SHORT).show();
-                    }
+        // Get user information from Firestore
+        firestore.collection("users").document(currentUser.getUid())
+                .get()
+                .addOnSuccessListener(documentSnapshot -> {
+                    String firstName = documentSnapshot.getString("firstName");
+                    String lastName = documentSnapshot.getString("lastName");
+                    
+                    // Generate filename with user info and timestamp
+                    String fileName = generateFileName(lastName, firstName);
+                    
+                    // Create folder structure: projectName/images or videos/fileName
+                    String folderType = "images".equals(mediaType) ? "images" : "videos";
+                    String cleanProjectName = cleanFileName(building.getName());
+                    String path = cleanProjectName + "/" + folderType + "/" + fileName;
+                    StorageReference reference = storageReference.child(path);
+                    
+                    // Upload file
+                    reference.putFile(fileUri)
+                            .addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
+                                @Override
+                                public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
+                                    if (progressIndicator != null) {
+                                        progressIndicator.setVisibility(View.GONE);
+                                    }
+                                    String mediaTypeText = "images".equals(mediaType) ? "Image" : "Video";
+                                    Toast.makeText(BuildingDetailActivity.this, 
+                                            mediaTypeText + " uploaded successfully!", Toast.LENGTH_SHORT).show();
+                                }
+                            })
+                            .addOnFailureListener(new OnFailureListener() {
+                                @Override
+                                public void onFailure(@NonNull Exception e) {
+                                    if (progressIndicator != null) {
+                                        progressIndicator.setVisibility(View.GONE);
+                                    }
+                                    Toast.makeText(BuildingDetailActivity.this, 
+                                            "Upload failed: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                                }
+                            })
+                            .addOnProgressListener(new OnProgressListener<UploadTask.TaskSnapshot>() {
+                                @Override
+                                public void onProgress(@NonNull UploadTask.TaskSnapshot snapshot) {
+                                    if (progressIndicator != null) {
+                                        double progress = (100.0 * snapshot.getBytesTransferred()) / snapshot.getTotalByteCount();
+                                        progressIndicator.setProgress((int) progress);
+                                    }
+                                }
+                            });
                 })
-                .addOnFailureListener(new OnFailureListener() {
-                    @Override
-                    public void onFailure(@NonNull Exception e) {
-                        if (progressIndicator != null) {
-                            progressIndicator.setVisibility(View.GONE);
-                        }
-                        Toast.makeText(BuildingDetailActivity.this, 
-                                "Upload failed: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                .addOnFailureListener(e -> {
+                    if (progressIndicator != null) {
+                        progressIndicator.setVisibility(View.GONE);
                     }
-                })
-                .addOnProgressListener(new OnProgressListener<UploadTask.TaskSnapshot>() {
-                    @Override
-                    public void onProgress(@NonNull UploadTask.TaskSnapshot snapshot) {
-                        if (progressIndicator != null) {
-                            double progress = (100.0 * snapshot.getBytesTransferred()) / snapshot.getTotalByteCount();
-                            progressIndicator.setProgress((int) progress);
-                        }
-                    }
+                    Toast.makeText(this, "Error getting user information: " + e.getMessage(), Toast.LENGTH_SHORT).show();
                 });
+    }
+    
+    private String generateFileName(String lastName, String firstName) {
+        // Generate timestamp in format: date (DDMMYYYY) + time (HHMMSS)
+        SimpleDateFormat dateFormat = new SimpleDateFormat("ddMMyyyy", Locale.getDefault());
+        SimpleDateFormat timeFormat = new SimpleDateFormat("HHmmss", Locale.getDefault());
+        
+        Date now = new Date();
+        String date = dateFormat.format(now);
+        String time = timeFormat.format(now);
+        
+        // Handle null values and clean names
+        String safeLastName = cleanFileName(lastName != null && !lastName.trim().isEmpty() ? lastName.trim() : "Unknown");
+        String safeFirstName = cleanFileName(firstName != null && !firstName.trim().isEmpty() ? firstName.trim() : "User");
+        
+        // Format: lastName_firstName_date_time
+        return safeLastName + "_" + safeFirstName + "_" + date + "_" + time;
+    }
+    
+    private String cleanFileName(String name) {
+        // Remove invalid characters for file names and Firebase Storage
+        // Replace spaces and invalid characters with underscores
+        return name.replaceAll("[<>\"?*/\\\\:|\\s]+", "_");
     }
 }
