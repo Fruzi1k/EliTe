@@ -191,7 +191,11 @@ public class Profile extends AppCompatActivity {
     }
 
     private void navigateToWork() {
-        if (currentUser == null) return;
+        if (currentUser == null) {
+            // Если данные пользователя еще не загружены, показываем сообщение и возвращаемся
+            Toast.makeText(this, "Loading user data, please wait...", Toast.LENGTH_SHORT).show();
+            return;
+        }
 
         Intent intent;
         if (currentUser.isDirector()) {
@@ -203,7 +207,11 @@ public class Profile extends AppCompatActivity {
     }
 
     private void navigateToWorkHours() {
-        if (currentUser == null) return;
+        if (currentUser == null) {
+            // Если данные пользователя еще не загружены, показываем сообщение и возвращаемся
+            Toast.makeText(this, "Loading user data, please wait...", Toast.LENGTH_SHORT).show();
+            return;
+        }
 
         Intent intent;
         if (currentUser.isDirector()) {

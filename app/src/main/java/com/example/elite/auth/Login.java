@@ -3,6 +3,7 @@ package com.example.elite.auth;
 import android.content.Intent;
 import android.os.Bundle;
 import android.text.TextUtils;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ProgressBar;
@@ -13,6 +14,7 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import com.example.elite.MainActivity;
 import com.example.elite.R;
+import com.example.elite.models.User;
 import com.example.elite.work.DirectorActivity;
 import com.example.elite.work.WorkerActivity;
 
@@ -97,9 +99,12 @@ public class Login extends AppCompatActivity {
                                 progressBar.setVisibility(View.GONE);
                                 if (task.isSuccessful()) {
                                     Toast.makeText(Login.this, "Login Successful", Toast.LENGTH_SHORT).show();
-                                    Intent intent = new Intent(getApplicationContext(), MainActivity.class);
-                                    startActivity(intent);
-                                    finish();
+                                    
+                                    // Проверяем роль пользователя перед переходом
+                                    FirebaseUser user = mAuth.getCurrentUser();
+                                    if (user != null) {
+                                        checkUserRole(user.getUid());
+                                    }
                                 } else {
                                     Toast.makeText(Login.this, "Authentication failed.",
                                             Toast.LENGTH_SHORT).show();
@@ -111,21 +116,39 @@ public class Login extends AppCompatActivity {
         });
     }
     private  void checkUserRole(String uid){
+        Log.d("Login", "Checking user role for UID: " + uid);
+        
         db.collection("users").document(uid).get()
                 .addOnSuccessListener(documentSnapshot -> {
                     if (documentSnapshot.exists()) {
-                        String role = documentSnapshot.getString("role");
-                        if ("director".equals(role)) {
-                            startActivity(new Intent(getApplicationContext(), DirectorActivity.class));
+                        Log.d("Login", "User document exists");
+                        Log.d("Login", "Document data: " + documentSnapshot.getData());
+                        
+                        // Используем объект User для консистентности
+                        User user = documentSnapshot.toObject(User.class);
+                        if (user != null) {
+                            Log.d("Login", "User position: " + user.getPosition());
+                            Log.d("Login", "Is director: " + user.isDirector());
+                            
+                            if (user.isDirector()) {
+                                Log.d("Login", "Redirecting to DirectorActivity");
+                                startActivity(new Intent(getApplicationContext(), DirectorActivity.class));
+                            } else {
+                                Log.d("Login", "Redirecting to WorkerActivity");
+                                startActivity(new Intent(getApplicationContext(), WorkerActivity.class));
+                            }
+                            finish();
                         } else {
-                            startActivity(new Intent(getApplicationContext(), WorkerActivity.class));
+                            Log.e("Login", "User object is null");
+                            Toast.makeText(Login.this, "Error parsing user data", Toast.LENGTH_SHORT).show();
                         }
-                        finish();
                     } else {
+                        Log.e("Login", "User document does not exist");
                         Toast.makeText(Login.this, "User data not found", Toast.LENGTH_SHORT).show();
                     }
                 })
                 .addOnFailureListener(e -> {
+                    Log.e("Login", "Error loading user role", e);
                     Toast.makeText(Login.this, "Error loading user role", Toast.LENGTH_SHORT).show();
                 });
     }

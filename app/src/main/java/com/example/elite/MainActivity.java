@@ -3,6 +3,7 @@ package com.example.elite;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
@@ -95,8 +96,8 @@ public class MainActivity extends AppCompatActivity {
             finish();
         }else{
             textView.setText(user.getEmail());
-            // Redirect to Profile instead of staying on MainActivity
-            redirectToProfile();
+            // Проверяем роль пользователя и перенаправляем соответственно
+            checkUserRoleAndRedirect();
         }
         button_logOut.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -160,6 +161,55 @@ public class MainActivity extends AppCompatActivity {
         intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
         startActivity(intent);
         finish();
+    }
+
+    private void checkUserRoleAndRedirect() {
+        if (user == null) return;
+        
+        Log.d("MainActivity", "Checking user role for UID: " + user.getUid());
+        
+        // Load user role from Firestore and navigate accordingly
+        db.collection("users")
+                .document(user.getUid())
+                .get()
+                .addOnSuccessListener(documentSnapshot -> {
+                    if (documentSnapshot.exists()) {
+                        Log.d("MainActivity", "User document exists");
+                        Log.d("MainActivity", "Document data: " + documentSnapshot.getData());
+                        
+                        User currentUser = documentSnapshot.toObject(User.class);
+                        if (currentUser != null) {
+                            Log.d("MainActivity", "User position: " + currentUser.getPosition());
+                            Log.d("MainActivity", "Is director: " + currentUser.isDirector());
+                            
+                            Intent intent;
+                            if (currentUser.isDirector()) {
+                                Log.d("MainActivity", "Redirecting to DirectorActivity");
+                                intent = new Intent(this, DirectorActivity.class);
+                            } else {
+                                Log.d("MainActivity", "Redirecting to WorkerActivity");
+                                intent = new Intent(this, WorkerActivity.class);
+                            }
+                            intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+                            startActivity(intent);
+                            finish();
+                        } else {
+                            Log.e("MainActivity", "User object is null");
+                            // Fallback to Profile if user object is null
+                            redirectToProfile();
+                        }
+                    } else {
+                        Log.e("MainActivity", "User document does not exist");
+                        // Fallback to Profile if no user document found
+                        redirectToProfile();
+                    }
+                })
+                .addOnFailureListener(e -> {
+                    Log.e("MainActivity", "Error loading user role", e);
+                    Toast.makeText(this, "Error loading user role", Toast.LENGTH_SHORT).show();
+                    // Fallback to Profile on error
+                    redirectToProfile();
+                });
     }
 
     private void navigateToWorkSection() {
