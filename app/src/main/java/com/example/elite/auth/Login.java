@@ -88,7 +88,7 @@ public class Login extends AppCompatActivity {
                     Toast.makeText(Login.this, "Enter password", Toast.LENGTH_SHORT).show();
                     return;
                 }
-                //TODO добавить метод checkUserRole
+
 
                 mAuth.signInWithEmailAndPassword(email, password)
                         .addOnCompleteListener(new OnCompleteListener<AuthResult>() {
