@@ -7,6 +7,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -34,8 +35,13 @@ import com.google.firebase.storage.OnProgressListener;
 import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
 
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
+
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 import java.util.Locale;
 
 public class BuildingDetailActivity extends AppCompatActivity {
@@ -58,6 +64,12 @@ public class BuildingDetailActivity extends AppCompatActivity {
     private LinearProgressIndicator progressIndicator;
     private Uri selectedFileUri;
     
+    // Media components
+    private RecyclerView recyclerMedia;
+    private MediaAdapter mediaAdapter;
+    private TextView textNoMedia, textMediaCount;
+    private List<MediaItem> mediaList;
+    
     // Activity Result Launchers
     private ActivityResultLauncher<Intent> imagePickerLauncher;
     private ActivityResultLauncher<Intent> videoPickerLauncher;
@@ -79,7 +91,9 @@ public class BuildingDetailActivity extends AppCompatActivity {
         getBuildingFromIntent();
         setupToolbar();
         setupClickListeners();
+        setupMediaRecyclerView();
         displayBuildingInfo();
+        loadMediaFiles();
     }
     
     private void initViews() {
@@ -95,6 +109,18 @@ public class BuildingDetailActivity extends AppCompatActivity {
         mapsCard = findViewById(R.id.maps_card);
         fabAddMedia = findViewById(R.id.fab_add_media);
         progressIndicator = findViewById(R.id.progress_indicator);
+        
+        // Media views
+        recyclerMedia = findViewById(R.id.recycler_media);
+        textNoMedia = findViewById(R.id.text_no_media);
+        textMediaCount = findViewById(R.id.text_media_count);
+        
+        Log.d("BuildingDetail", "Media views initialized: " + 
+            (recyclerMedia != null) + ", " + 
+            (textNoMedia != null) + ", " + 
+            (textMediaCount != null));
+        
+        mediaList = new ArrayList<>();
     }
     
     private void getBuildingFromIntent() {
@@ -298,6 +324,9 @@ public class BuildingDetailActivity extends AppCompatActivity {
                                     String mediaTypeText = "images".equals(mediaType) ? "Image" : "Video";
                                     Toast.makeText(BuildingDetailActivity.this, 
                                             mediaTypeText + " uploaded successfully!", Toast.LENGTH_SHORT).show();
+                                    
+                                    // Refresh media list
+                                    loadMediaFiles();
                                 }
                             })
                             .addOnFailureListener(new OnFailureListener() {
@@ -349,5 +378,146 @@ public class BuildingDetailActivity extends AppCompatActivity {
         // Remove invalid characters for file names and Firebase Storage
         // Replace spaces and invalid characters with underscores
         return name.replaceAll("[<>\"?*/\\\\:|\\s]+", "_");
+    }
+    
+    private void setupMediaRecyclerView() {
+        mediaAdapter = new MediaAdapter(mediaList, this, new MediaAdapter.OnMediaActionListener() {
+            @Override
+            public void onMediaClick(MediaItem mediaItem) {
+                // Open media file
+                openMediaFile(mediaItem);
+            }
+
+            @Override
+            public void onMediaDelete(MediaItem mediaItem) {
+                // Delete media file
+                deleteMediaFile(mediaItem);
+            }
+        });
+        
+        recyclerMedia.setLayoutManager(new LinearLayoutManager(this));
+        recyclerMedia.setAdapter(mediaAdapter);
+    }
+
+    private void loadMediaFiles() {
+        if (building == null) return;
+        
+        mediaList.clear();
+        String projectName = cleanFileName(building.getName());
+        
+        Log.d("BuildingDetail", "Loading media for project: " + projectName);
+        Log.d("BuildingDetail", "Original project name: " + building.getName());
+        
+        // Load images
+        loadMediaFromFolder(projectName + "/images", "image");
+        
+        // Load videos
+        loadMediaFromFolder(projectName + "/videos", "video");
+        
+        // Show media section immediately
+        updateMediaDisplay();
+    }
+
+    private void loadMediaFromFolder(String folderPath, String mediaType) {
+        StorageReference folderRef = storageReference.child(folderPath);
+        
+        Log.d("BuildingDetail", "Loading from folder: " + folderPath);
+        
+        folderRef.listAll()
+            .addOnSuccessListener(listResult -> {
+                Log.d("BuildingDetail", "Found " + listResult.getItems().size() + " items in " + folderPath);
+                for (StorageReference item : listResult.getItems()) {
+                    // Get download URL and metadata
+                    item.getDownloadUrl().addOnSuccessListener(uri -> {
+                        item.getMetadata().addOnSuccessListener(metadata -> {
+                            String fileName = item.getName();
+                            String uploadedBy = extractUploadedBy(fileName);
+                            long uploadTime = metadata.getCreationTimeMillis();
+                            long fileSize = metadata.getSizeBytes();
+                            
+                            MediaItem mediaItem = new MediaItem(
+                                fileName,
+                                uri.toString(),
+                                mediaType,
+                                uploadedBy,
+                                uploadTime,
+                                fileSize
+                            );
+                            
+                            mediaList.add(mediaItem);
+                            updateMediaDisplay();
+                        });
+                    });
+                }
+            })
+            .addOnFailureListener(e -> {
+                Log.e("BuildingDetail", "Error loading media files from " + folderPath + ": " + e.getMessage(), e);
+            });
+    }
+
+    private String extractUploadedBy(String fileName) {
+        // Extract user name from filename (lastName_firstName_date_time)
+        try {
+            String[] parts = fileName.split("_");
+            if (parts.length >= 2) {
+                return parts[1] + " " + parts[0]; // firstName lastName
+            }
+        } catch (Exception e) {
+            Log.e("BuildingDetail", "Error extracting user name from filename", e);
+        }
+        return "Unknown";
+    }
+
+    private void updateMediaDisplay() {
+        runOnUiThread(() -> {
+            Log.d("BuildingDetail", "Updating media display. Media count: " + mediaList.size());
+            if (mediaList.isEmpty()) {
+                textNoMedia.setVisibility(View.VISIBLE);
+                recyclerMedia.setVisibility(View.GONE);
+                textMediaCount.setText("0 files");
+                Log.d("BuildingDetail", "No media files found, showing empty state");
+            } else {
+                textNoMedia.setVisibility(View.GONE);
+                recyclerMedia.setVisibility(View.VISIBLE);
+                textMediaCount.setText(mediaList.size() + " files");
+                mediaAdapter.updateMediaList(mediaList);
+                Log.d("BuildingDetail", "Showing " + mediaList.size() + " media files");
+            }
+        });
+    }
+
+    private void openMediaFile(MediaItem mediaItem) {
+        try {
+            Intent intent = new Intent(Intent.ACTION_VIEW);
+            intent.setData(Uri.parse(mediaItem.getDownloadUrl()));
+            startActivity(intent);
+        } catch (Exception e) {
+            Toast.makeText(this, "Cannot open media file", Toast.LENGTH_SHORT).show();
+            Log.e("BuildingDetail", "Error opening media", e);
+        }
+    }
+
+    private void deleteMediaFile(MediaItem mediaItem) {
+        new AlertDialog.Builder(this)
+            .setTitle("Delete Media")
+            .setMessage("Are you sure you want to delete this file?")
+            .setPositiveButton("Delete", (dialog, which) -> {
+                // Delete file from Storage
+                String projectName = cleanFileName(building.getName());
+                String filePath = projectName + "/" + (mediaItem.isImage() ? "images" : "videos") + "/" + mediaItem.getFileName();
+                
+                storageReference.child(filePath).delete()
+                    .addOnSuccessListener(aVoid -> {
+                        mediaList.remove(mediaItem);
+                        updateMediaDisplay();
+                        Toast.makeText(this, "File deleted successfully", Toast.LENGTH_SHORT).show();
+                    })
+                    .addOnFailureListener(e -> {
+                        Toast.makeText(this, "Failed to delete file", Toast.LENGTH_SHORT).show();
+                        Log.e("BuildingDetail", "Error deleting file", e);
+                    });
+            })
+            .setNegativeButton("Cancel", null)
+            .show();
     }
 }
