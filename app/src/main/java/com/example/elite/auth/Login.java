@@ -1,4 +1,4 @@
-package com.example.elite;
+package com.example.elite.auth;
 
 import android.content.Intent;
 import android.os.Bundle;
@@ -8,6 +8,13 @@ import android.widget.Button;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
+
+import androidx.appcompat.app.AppCompatActivity;
+
+import com.example.elite.MainActivity;
+import com.example.elite.R;
+import com.example.elite.work.DirectorActivity;
+import com.example.elite.work.WorkerActivity;
 
 import androidx.activity.EdgeToEdge;
 import androidx.annotation.NonNull;

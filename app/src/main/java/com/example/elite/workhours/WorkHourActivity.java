@@ -1,4 +1,4 @@
-package com.example.elite;
+package com.example.elite.workhours;
 
 import android.content.Intent;
 import android.os.Bundle;
@@ -7,6 +7,10 @@ import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import com.example.elite.R;
+import com.example.elite.auth.Login;
+import com.example.elite.profile.Profile;
+import com.example.elite.work.WorkerActivity;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.button.MaterialButton;
 import com.google.firebase.auth.FirebaseAuth;

@@ -1,4 +1,4 @@
-package com.example.elite;
+package com.example.elite.work;
 
 import android.app.AlertDialog;
 import android.content.ClipData;
@@ -15,9 +15,24 @@ import android.widget.EditText;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
+
+import com.example.elite.R;
+import com.example.elite.adapters.BuildingAdapter;
+import com.example.elite.auth.Login;
+import com.example.elite.models.Building;
+import com.example.elite.profile.Profile;
+import com.example.elite.workhours.HoursFragmentDirector;
+
+import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.example.elite.R;
+import com.example.elite.adapters.BuildingAdapter;
+import com.example.elite.auth.Login;
+import com.example.elite.models.Building;
+import com.example.elite.profile.Profile;
+import com.example.elite.workhours.HoursFragmentDirector;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;

@@ -1,4 +1,4 @@
-package com.example.elite;
+package com.example.elite.workhours;
 
 import android.app.DatePickerDialog;
 import android.content.Intent;
@@ -16,6 +16,14 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.example.elite.MainActivity;
+
+import com.example.elite.R;
+import com.example.elite.adapters.WorkEntryAdapter;
+import com.example.elite.models.Building;
+import com.example.elite.models.WorkEntry;
+import com.example.elite.profile.Profile;
+import com.example.elite.work.DirectorActivity;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
@@ -122,6 +130,9 @@ public class HoursFragmentDirector extends AppCompatActivity {
         textSelectedDate = findViewById(R.id.text_selected_date);
         textNoEntries = findViewById(R.id.text_no_entries);
         recyclerWorkEntries = findViewById(R.id.recycler_work_entries);
+        
+        // Устанавливаем понедельник как первый день недели
+        calendarView.setFirstDayOfWeek(Calendar.MONDAY);
         
         // Set initial date
         updateSelectedDateText();
@@ -271,17 +282,22 @@ public class HoursFragmentDirector extends AppCompatActivity {
     private void updateStatistics() {
         Calendar calendar = Calendar.getInstance();
         
-        // Calculate weekly hours
-        calendar.setTime(new Date());
-        calendar.set(Calendar.DAY_OF_WEEK, Calendar.MONDAY);
-        calendar.set(Calendar.HOUR_OF_DAY, 0);
-        calendar.set(Calendar.MINUTE, 0);
-        calendar.set(Calendar.SECOND, 0);
-        calendar.set(Calendar.MILLISECOND, 0);
-        Date weekStart = calendar.getTime();
+        // Weekly hours - правильный расчет текущей недели
+        Calendar weekCalendar = Calendar.getInstance();
         
-        calendar.add(Calendar.WEEK_OF_YEAR, 1);
-        Date weekEnd = calendar.getTime();
+        // Получаем начало недели (понедельник)
+        int dayOfWeek = weekCalendar.get(Calendar.DAY_OF_WEEK);
+        int daysToSubtract = (dayOfWeek == Calendar.SUNDAY) ? 6 : dayOfWeek - Calendar.MONDAY;
+        weekCalendar.add(Calendar.DAY_OF_MONTH, -daysToSubtract);
+        weekCalendar.set(Calendar.HOUR_OF_DAY, 0);
+        weekCalendar.set(Calendar.MINUTE, 0);
+        weekCalendar.set(Calendar.SECOND, 0);
+        weekCalendar.set(Calendar.MILLISECOND, 0);
+        Date weekStart = weekCalendar.getTime();
+        
+        // Получаем конец недели (воскресенье)
+        weekCalendar.add(Calendar.DAY_OF_MONTH, 7);
+        Date weekEnd = weekCalendar.getTime();
         
         double weeklyHours = calculateHoursForPeriod(weekStart, weekEnd);
         

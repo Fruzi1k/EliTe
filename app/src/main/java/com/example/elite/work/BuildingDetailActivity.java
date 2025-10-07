@@ -1,4 +1,4 @@
-package com.example.elite;
+package com.example.elite.work;
 
 import android.app.AlertDialog;
 import android.content.ClipData;
@@ -19,6 +19,10 @@ import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
+import com.example.elite.R;
+import com.example.elite.adapters.MediaAdapter;
+import com.example.elite.models.Building;
+import com.example.elite.models.MediaItem;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.material.appbar.MaterialToolbar;

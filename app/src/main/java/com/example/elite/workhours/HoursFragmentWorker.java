@@ -1,4 +1,4 @@
-package com.example.elite;
+package com.example.elite.workhours;
 
 import android.app.DatePickerDialog;
 import android.content.Intent;
@@ -16,6 +16,12 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.example.elite.MainActivity;
+import com.example.elite.R;
+import com.example.elite.models.Building;
+import com.example.elite.models.WorkEntry;
+import com.example.elite.profile.Profile;
+import com.example.elite.work.WorkerActivity;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
@@ -164,6 +170,9 @@ public class HoursFragmentWorker extends AppCompatActivity {
                 Log.e("HoursFragmentWorker", "CalendarView is null, cannot setup");
                 return;
             }
+            
+            // Устанавливаем понедельник как первый день недели
+            calendarView.setFirstDayOfWeek(Calendar.MONDAY);
             
             calendarView.setOnDateChangeListener(new CalendarView.OnDateChangeListener() {
                 @Override
@@ -484,22 +493,40 @@ public class HoursFragmentWorker extends AppCompatActivity {
     private void updateStatistics() {
         Calendar calendar = Calendar.getInstance();
         
-        // Weekly hours
-        calendar.set(Calendar.DAY_OF_WEEK, Calendar.MONDAY);
-        Date weekStart = calendar.getTime();
-        calendar.add(Calendar.WEEK_OF_YEAR, 1);
-        Date weekEnd = calendar.getTime();
+        // Weekly hours - правильный расчет текущей недели
+        Calendar weekCalendar = Calendar.getInstance();
+        
+        // Получаем начало недели (понедельник)
+        int dayOfWeek = weekCalendar.get(Calendar.DAY_OF_WEEK);
+        int daysToSubtract = (dayOfWeek == Calendar.SUNDAY) ? 6 : dayOfWeek - Calendar.MONDAY;
+        weekCalendar.add(Calendar.DAY_OF_MONTH, -daysToSubtract);
+        weekCalendar.set(Calendar.HOUR_OF_DAY, 0);
+        weekCalendar.set(Calendar.MINUTE, 0);
+        weekCalendar.set(Calendar.SECOND, 0);
+        weekCalendar.set(Calendar.MILLISECOND, 0);
+        Date weekStart = weekCalendar.getTime();
+        
+        // Получаем конец недели (воскресенье)
+        weekCalendar.add(Calendar.DAY_OF_MONTH, 7);
+        Date weekEnd = weekCalendar.getTime();
         
         double weeklyHours = calculateHoursForPeriod(weekStart, weekEnd);
         
         // Monthly hours
         calendar.setTime(new Date());
         calendar.set(Calendar.DAY_OF_MONTH, 1);
+        calendar.set(Calendar.HOUR_OF_DAY, 0);
+        calendar.set(Calendar.MINUTE, 0);
+        calendar.set(Calendar.SECOND, 0);
+        calendar.set(Calendar.MILLISECOND, 0);
         Date monthStart = calendar.getTime();
         calendar.add(Calendar.MONTH, 1);
         Date monthEnd = calendar.getTime();
         
         double monthlyHours = calculateHoursForPeriod(monthStart, monthEnd);
+        
+        Log.d("HoursFragmentWorker", "Week start: " + weekStart + ", Week end: " + weekEnd + ", Weekly hours: " + weeklyHours);
+        Log.d("HoursFragmentWorker", "Month start: " + monthStart + ", Month end: " + monthEnd + ", Monthly hours: " + monthlyHours);
         
         textWeeklyHours.setText(String.format(Locale.getDefault(), "%.1f hrs", weeklyHours));
         textMonthlyHours.setText(String.format(Locale.getDefault(), "%.1f hrs", monthlyHours));
@@ -507,12 +534,24 @@ public class HoursFragmentWorker extends AppCompatActivity {
     
     private double calculateHoursForPeriod(Date start, Date end) {
         double totalHours = 0;
+        int entriesCount = 0;
+        
+        Log.d("HoursFragmentWorker", "Calculating hours for period: " + start + " to " + end);
+        Log.d("HoursFragmentWorker", "Total work entries to check: " + workEntries.size());
+        
         for (WorkEntry entry : workEntries) {
-            if (entry.getWorkDate().getTime() >= start.getTime() && 
-                entry.getWorkDate().getTime() < end.getTime()) {
+            Date entryDate = entry.getWorkDate();
+            boolean isInPeriod = entryDate.getTime() >= start.getTime() && entryDate.getTime() < end.getTime();
+            
+            Log.d("HoursFragmentWorker", "Entry date: " + entryDate + ", Hours: " + entry.getHoursWorked() + ", In period: " + isInPeriod);
+            
+            if (isInPeriod) {
                 totalHours += entry.getHoursWorked();
+                entriesCount++;
             }
         }
+        
+        Log.d("HoursFragmentWorker", "Period calculation result: " + entriesCount + " entries, " + totalHours + " total hours");
         return totalHours;
     }
     

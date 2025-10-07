@@ -1,4 +1,4 @@
-package com.example.elite;
+package com.example.elite.models;
 
 public class User {
     private String uid;

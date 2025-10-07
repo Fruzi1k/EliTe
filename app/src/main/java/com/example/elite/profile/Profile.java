@@ -1,4 +1,4 @@
-package com.example.elite;
+package com.example.elite.profile;
 
 import android.content.Intent;
 import android.os.Bundle;
@@ -9,6 +9,13 @@ import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import com.example.elite.MainActivity;
+import com.example.elite.R;
+import com.example.elite.models.User;
+import com.example.elite.work.DirectorActivity;
+import com.example.elite.work.WorkerActivity;
+import com.example.elite.workhours.HoursFragmentDirector;
+import com.example.elite.workhours.HoursFragmentWorker;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.card.MaterialCardView;

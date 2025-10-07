@@ -1,4 +1,4 @@
-package com.example.elite;
+package com.example.elite.work;
 
 import android.content.Intent;
 import android.net.Uri;
@@ -10,6 +10,7 @@ import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.example.elite.R;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 public class BuildingActivity extends AppCompatActivity {

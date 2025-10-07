@@ -1,4 +1,4 @@
-package com.example.elite;
+package com.example.elite.work;
 
 import android.content.Intent;
 import android.net.Uri;
@@ -18,6 +18,10 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 
 import com.bumptech.glide.Glide;
+import com.example.elite.R;
+import com.example.elite.auth.Login;
+import com.example.elite.profile.Profile;
+import com.example.elite.workhours.HoursFragmentWorker;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.material.button.MaterialButton;

@@ -1,4 +1,4 @@
-package com.example.elite;
+package com.example.elite.models;
 
 import java.io.Serializable;
 
