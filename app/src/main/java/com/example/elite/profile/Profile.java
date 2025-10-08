@@ -227,7 +227,7 @@ public class Profile extends AppCompatActivity {
     }
 
     private void editProfile() {
-        // TODO: Implement profile editing
+        // TODO: Implement profile editing!
         // Временно добавим очистку старых полей
         cleanupUserDocument();
         Toast.makeText(this, "Edit profile functionality coming soon", Toast.LENGTH_SHORT).show();
