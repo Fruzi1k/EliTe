@@ -19,6 +19,7 @@ import androidx.appcompat.widget.Toolbar;
 
 import com.bumptech.glide.Glide;
 import com.example.elite.R;
+import com.example.elite.apps.AppsActivity;
 import com.example.elite.auth.Login;
 import com.example.elite.profile.Profile;
 import com.example.elite.workhours.HoursFragmentWorker;
@@ -116,6 +117,9 @@ public class WorkerActivity extends AppCompatActivity {
                 return true;
             } else if (itemId == R.id.nav_work_hour) {
                 startActivity(new Intent(this, HoursFragmentWorker.class));
+                return true;
+            } else if (itemId == R.id.nav_apps) {
+                startActivity(new Intent(this, AppsActivity.class));
                 return true;
             }
             return false;

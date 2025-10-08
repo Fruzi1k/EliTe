@@ -18,6 +18,7 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import com.example.elite.R;
 import com.example.elite.adapters.BuildingAdapter;
+import com.example.elite.apps.AppsActivity;
 import com.example.elite.auth.Login;
 import com.example.elite.models.Building;
 import com.example.elite.profile.Profile;
@@ -128,6 +129,9 @@ public class DirectorActivity extends AppCompatActivity implements BuildingAdapt
                 return true;
             } else if (itemId == R.id.nav_work_hour) {
                 startActivity(new Intent(this, HoursFragmentDirector.class));
+                return true;
+            } else if (itemId == R.id.nav_apps) {
+                startActivity(new Intent(this, AppsActivity.class));
                 return true;
             }
             return false;

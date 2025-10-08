@@ -11,6 +11,7 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import com.example.elite.MainActivity;
 import com.example.elite.R;
+import com.example.elite.apps.AppsActivity;
 import com.example.elite.models.User;
 import com.example.elite.work.DirectorActivity;
 import com.example.elite.work.WorkerActivity;
@@ -88,6 +89,9 @@ public class Profile extends AppCompatActivity {
                 return true;
             } else if (itemId == R.id.nav_work_hour) {
                 navigateToWorkHours();
+                return true;
+            } else if (itemId == R.id.nav_apps) {
+                startActivity(new Intent(this, AppsActivity.class));
                 return true;
             }
             return false;
