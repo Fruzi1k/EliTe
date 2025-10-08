@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="utf-8"?>
+<com.google.android.material.card.MaterialCardView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_margin="8dp"
+    app:cardCornerRadius="12dp"
+    app:cardElevation="2dp"
+    app:strokeWidth="0dp">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:padding="16dp"
+        android:gravity="center_vertical">
+
+        <!-- Worker Icon/Avatar -->
+        <ImageView
+            android:id="@+id/worker_avatar"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:src="@drawable/ic_person"
+            android:background="@drawable/circle_background"
+            android:padding="12dp"
+            app:tint="?attr/colorPrimary" />
+
+        <!-- Worker Info -->
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:orientation="vertical"
+            android:layout_marginStart="16dp">
+
+            <!-- Worker Name -->
+            <TextView
+                android:id="@+id/worker_name"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textSize="16sp"
+                android:textStyle="bold"
+                android:textColor="?attr/colorOnSurface"
+                tools:text="John Doe" />
+
+            <!-- Worker Email -->
+            <TextView
+                android:id="@+id/worker_email"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="4dp"
+                android:textSize="14sp"
+                android:textColor="?attr/colorOnSurfaceVariant"
+                tools:text="john.doe@example.com" />
+
+            <!-- Worker Phone (if available) -->
+            <TextView
+                android:id="@+id/worker_phone"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="2dp"
+                android:textSize="12sp"
+                android:textColor="?attr/colorOnSurfaceVariant"
+                android:visibility="gone"
+                tools:text="+1 234 567 8900" />
+
+        </LinearLayout>
+
+        <!-- Position Badge -->
+        <TextView
+            android:id="@+id/worker_position_badge"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="WORKER"
+            android:textSize="10sp"
+            android:textStyle="bold"
+            android:textColor="?attr/colorPrimary"
+            android:background="@drawable/badge_background"
+            android:paddingStart="12dp"
+            android:paddingEnd="12dp"
+            android:paddingTop="4dp"
+            android:paddingBottom="4dp" />
+
+    </LinearLayout>
+
+</com.google.android.material.card.MaterialCardView>

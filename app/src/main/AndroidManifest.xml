@@ -68,6 +68,12 @@
         <activity
             android:name=".apps.AppsActivity"
             android:exported="true" />
+        <activity
+            android:name=".apps.WorkerListActivity"
+            android:exported="false" />
+        <activity
+            android:name=".apps.WorkerInfoActivity"
+            android:exported="false" />
 
     </application>
 

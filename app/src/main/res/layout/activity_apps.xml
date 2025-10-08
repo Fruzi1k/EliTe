@@ -45,7 +45,7 @@
                 app:cardCornerRadius="16dp"
                 app:cardElevation="4dp"
                 app:strokeWidth="0dp"
-                android:visibility="gone">
+                android:visibility="visible">
 
                 <LinearLayout
                     android:layout_width="match_parent"
