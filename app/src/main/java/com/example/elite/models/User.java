@@ -12,11 +12,13 @@ public class User {
     public User() {
     }
 
-    public User(String uid, String email, String password, String position) {
+    public User(String uid, String email, String password, String position, String firstName, String lastName) {
         this.uid = uid;
         this.email = email;
         this.password = password;
         this.position = position;
+        this.firstName = firstName;
+        this.lastName = lastName;
     }
 
     public User(String uid, String email, String password, String position, String firstName, String lastName, String phone) {

@@ -149,10 +149,10 @@ public class Profile extends AppCompatActivity {
                 firebaseUser.getUid(),
                 firebaseUser.getEmail(),
                 "",
-                "worker" // default position
+                "worker", // default position
+                "", // firstName
+                "" // lastName
         );
-        currentUser.setFirstName("");
-        currentUser.setLastName("");
         currentUser.setPhone("");
 
         db.collection("users")
@@ -172,13 +172,13 @@ public class Profile extends AppCompatActivity {
         if (currentUser == null) return;
 
         textFullName.setText(currentUser.getFullName());
-        textEmail.setText(currentUser.getEmail() != null ? currentUser.getEmail() : "Не указан");
+        textEmail.setText(currentUser.getEmail() != null ? currentUser.getEmail() : "Not fill");
         
         String phone = currentUser.getPhone();
-        textPhone.setText(phone != null && !phone.trim().isEmpty() ? phone : "Не указан");
+        textPhone.setText(phone != null && !phone.trim().isEmpty() ? phone : "Not fill");
         
         String position = currentUser.getPosition();
-        textPosition.setText(position != null && !position.trim().isEmpty() ? position : "Не указана");
+        textPosition.setText(position != null && !position.trim().isEmpty() ? position : "Not fill");
         
         String roleText = getPositionDisplayName(position);
         textRole.setText(roleText);
@@ -186,11 +186,11 @@ public class Profile extends AppCompatActivity {
 
     private String getPositionDisplayName(String position) {
         if ("director".equalsIgnoreCase(position)) {
-            return "Директор";
+            return "Director";
         } else if ("worker".equalsIgnoreCase(position)) {
-            return "Работник";
+            return "Worker";
         } else {
-            return position != null && !position.trim().isEmpty() ? position : "Не указана";
+            return position != null && !position.trim().isEmpty() ? position : "Not fill";
         }
     }
 

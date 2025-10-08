@@ -26,7 +26,7 @@ import com.google.firebase.firestore.FirebaseFirestore;
 
 public class Registration extends AppCompatActivity {
 
-    TextInputEditText editTextEmail, editTextPassword;
+    TextInputEditText editTextEmail, editTextPassword, editTextFirstName , editTextLastName;
     Button buttonRegistration;
     FirebaseAuth mAuth;
     ProgressBar progressBar;
@@ -41,6 +41,8 @@ public class Registration extends AppCompatActivity {
 
         editTextEmail = findViewById(R.id.email);
         editTextPassword = findViewById(R.id.password);
+        editTextFirstName = findViewById(R.id.edit_First_Name);
+        editTextLastName = findViewById(R.id.edit_Last_Name);
         buttonRegistration = findViewById(R.id.button_Registration);
         mAuth = FirebaseAuth.getInstance();
         progressBar = findViewById(R.id.progressBar);
@@ -55,16 +57,31 @@ public class Registration extends AppCompatActivity {
 
         buttonRegistration.setOnClickListener(v -> {
             progressBar.setVisibility(View.VISIBLE);
-            String email, password;
+            String email, password, firstname, lastname;
             email = String.valueOf(editTextEmail.getText());
             password = String.valueOf(editTextPassword.getText());
+            firstname = String.valueOf(editTextFirstName.getText());
+            lastname = String.valueOf(editTextLastName.getText());
+
 
             if (TextUtils.isEmpty(email)) {
-                Toast.makeText(Registration.this, "Enter mail", Toast.LENGTH_SHORT).show();
+                Toast.makeText(Registration.this, "Enter email", Toast.LENGTH_SHORT).show();
+                progressBar.setVisibility(View.GONE);
                 return;
             }
             if (TextUtils.isEmpty(password)) {
                 Toast.makeText(Registration.this, "Enter password", Toast.LENGTH_SHORT).show();
+                progressBar.setVisibility(View.GONE);
+                return;
+            }
+            if (TextUtils.isEmpty(firstname)) {
+                Toast.makeText(Registration.this, "Enter first name", Toast.LENGTH_SHORT).show();
+                progressBar.setVisibility(View.GONE);
+                return;
+            }
+            if (TextUtils.isEmpty(lastname)) {
+                Toast.makeText(Registration.this, "Enter last name", Toast.LENGTH_SHORT).show();
+                progressBar.setVisibility(View.GONE);
                 return;
             }
 
@@ -81,7 +98,7 @@ public class Registration extends AppCompatActivity {
                                     String uid = firebaseUser.getUid();
 
                                     // default role = worker
-                                    User user = new User(uid, email, password, "worker");
+                                    User user = new User(uid, email, password, "worker",firstname,lastname);
 
                                     db.collection("users").document(uid)
                                             .set(user)
