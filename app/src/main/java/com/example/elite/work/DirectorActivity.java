@@ -59,7 +59,6 @@ public class DirectorActivity extends AppCompatActivity implements BuildingAdapt
     private FloatingActionButton fabAddBuilding;
     private CircularProgressIndicator progressIndicator;
     private android.widget.TextView textEmptyState;
-    private android.widget.Button buttonLogout;
     
     private List<Building> buildingsList;
 
@@ -95,7 +94,6 @@ public class DirectorActivity extends AppCompatActivity implements BuildingAdapt
         fabAddBuilding = findViewById(R.id.fab_add_building);
         progressIndicator = findViewById(R.id.progress_indicator);
         textEmptyState = findViewById(R.id.text_empty_state);
-        buttonLogout = findViewById(R.id.button_logout_director);
         bottomNavigationView = findViewById(R.id.bottom_navigation_director);
         
         buildingsList = new ArrayList<>();
@@ -109,13 +107,6 @@ public class DirectorActivity extends AppCompatActivity implements BuildingAdapt
 
     private void setupClickListeners() {
         fabAddBuilding.setOnClickListener(v -> showAddBuildingDialog(null));
-        
-        buttonLogout.setOnClickListener(v -> {
-            FirebaseAuth.getInstance().signOut();
-            Intent intent = new Intent(getApplicationContext(), Login.class);
-            startActivity(intent);
-            finish();
-        });
     }
 
     private void setupBottomNavigation() {

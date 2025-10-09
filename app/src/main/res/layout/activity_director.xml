@@ -11,21 +11,12 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:background="?attr/colorPrimary"
-        app:title="Buildings Management"
+        app:title="Project Management"
         app:titleCentered="true"
         app:titleTextColor="?attr/colorSurface"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent" />
-
-    <Button
-        android:id="@+id/button_logout_director"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Log Out"
-        app:layout_constraintTop_toTopOf="@+id/toolbar_director"
-        app:layout_constraintEnd_toEndOf="parent"
-        android:layout_margin="8dp" />
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/recycler_view_buildings"
@@ -76,12 +67,15 @@
         android:id="@+id/bottom_navigation_director"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:layout_gravity="bottom"
         android:background="?attr/colorSurface"
-        app:itemIconTint="@color/bottom_navigation_color"
-        app:itemTextColor="@color/bottom_navigation_color"
+        app:elevation="8dp"
         app:menu="@menu/bottom_navigation_menu"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent" />
+
+    <!--app:itemIconTint="@color/bottom_navigation_color"-->
+    <!--app:itemTextColor="@color/bottom_navigation_color"-->
 
 </androidx.constraintlayout.widget.ConstraintLayout>
