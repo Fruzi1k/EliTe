@@ -12,6 +12,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import com.example.elite.MainActivity;
 import com.example.elite.R;
 import com.example.elite.apps.AppsActivity;
+import com.example.elite.auth.Login;
 import com.example.elite.models.User;
 import com.example.elite.work.DirectorActivity;
 import com.example.elite.work.WorkerActivity;
@@ -118,7 +119,10 @@ public class Profile extends AppCompatActivity {
                     
                     if (e != null) {
                         Log.e("Profile", "Listen failed.", e);
-                        Toast.makeText(this, "Error loading profile", Toast.LENGTH_SHORT).show();
+                        // Don't show error if activity is finishing (e.g., during logout)
+                        if (!isFinishing()) {
+                            Toast.makeText(this, "Error loading profile", Toast.LENGTH_SHORT).show();
+                        }
                         return;
                     }
                     
@@ -255,8 +259,14 @@ public class Profile extends AppCompatActivity {
     }
 
     private void logout() {
-        mAuth.signOut();
-        redirectToLogin();
+        // First finish the activity to stop listeners
+        finish();
+        
+        // Then sign out and redirect
+        FirebaseAuth.getInstance().signOut();
+        Intent intent = new Intent(getApplicationContext(), Login.class);
+        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+        startActivity(intent);
     }
 
     private void redirectToLogin() {

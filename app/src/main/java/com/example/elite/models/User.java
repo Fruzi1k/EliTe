@@ -104,7 +104,7 @@ public class User implements Serializable {
             if (fullName.length() > 0) fullName.append(" ");
             fullName.append(lastName);
         }
-        return fullName.length() > 0 ? fullName.toString() : "Пользователь";
+        return fullName.length() > 0 ? fullName.toString() : "User";
     }
 
     public boolean isDirector() {
